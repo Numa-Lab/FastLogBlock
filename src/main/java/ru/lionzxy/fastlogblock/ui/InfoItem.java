@@ -1,44 +1,61 @@
 package ru.lionzxy.fastlogblock.ui;
 
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
-import ru.lionzxy.fastlogblock.FastLogBlock;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import ru.lionzxy.fastlogblock.handlers.EventHandlingManager;
 import ru.lionzxy.fastlogblock.utils.MinecraftUtils;
 
-import java.util.Objects;
-
-public class InfoItem extends Item {
-    private static final String ITEMNAME = "infoitem";
+public class InfoItem {
     private final EventHandlingManager eventHandlingManager;
 
     public InfoItem(EventHandlingManager eventHandlingManager) {
         this.eventHandlingManager = eventHandlingManager;
-        setRegistryName(FastLogBlock.MODID, ITEMNAME);
-        final ResourceLocation registryName = Objects.requireNonNull(getRegistryName());
-        setUnlocalizedName(registryName.toString());
-        setCreativeTab(CreativeTabs.MISC);
     }
 
+    @SubscribeEvent
+    public void onItemRightClick(PlayerInteractEvent.RightClickBlock event) {
+        BlockPos pos = event.getPos();
+        EnumFacing face = event.getFace();
+        if (face != null) {
+            pos = pos.offset(face);
+        }
 
-    @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if (worldIn.isRemote) {
+        EnumActionResult result = onItemUse(event.getEntityPlayer(), event.getWorld(), pos, event.getItemStack());
+        if (result == EnumActionResult.SUCCESS || result == EnumActionResult.PASS) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public void onItemLeftClick(PlayerInteractEvent.LeftClickBlock event) {
+        BlockPos pos = event.getPos();
+        EnumActionResult result = onItemUse(event.getEntityPlayer(), event.getWorld(), pos, event.getItemStack());
+        if (result == EnumActionResult.SUCCESS || result == EnumActionResult.PASS) {
+            event.setCanceled(true);
+        }
+    }
+
+    public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, ItemStack itemStack) {
+        if (itemStack.getItem() != Items.WOODEN_HOE) {
             return EnumActionResult.FAIL;
+        }
+        if (worldIn.isRemote) {
+            return EnumActionResult.PASS;
         }
         if (!MinecraftUtils.canShowLog(player)) {
-            player.sendMessage(new TextComponentTranslation("message.fastlogblock:blockinfo.event.permissionerror"));
-            return EnumActionResult.FAIL;
+            player.sendMessage(new TextComponentString(String.format(I18n.translateToLocal("message.fastlogblock:blockinfo.event.permissionerror"))));
+            return EnumActionResult.PASS;
         }
-        player.sendMessage(new TextComponentTranslation("message.fastlogblock:blockinfo.start", pos.getX(), pos.getY(), pos.getZ()));
+        player.sendMessage(new TextComponentString(String.format(I18n.translateToLocal("message.fastlogblock:blockinfo.start"), pos.getX(), pos.getY(), pos.getZ())));
         eventHandlingManager.handleLogByPos(player, pos, worldIn);
         return EnumActionResult.SUCCESS;
     }

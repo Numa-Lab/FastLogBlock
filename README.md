@@ -2,6 +2,12 @@
 
 This is minecraft mod for easy and fast logging block place and break. 
 
+## How to use
+1. Confirm you have op access to the server.
+2. Have a Wooden-Hoe.
+3. Left click the block you want to check a log.
+4. Right click checks a front of the block.
+
 ## Event multithread handling
 ![](https://image.ibb.co/hyaPRw/Fast_Log_Block.png)
 
