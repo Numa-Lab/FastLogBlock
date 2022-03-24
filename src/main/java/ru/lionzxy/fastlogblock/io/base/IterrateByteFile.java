@@ -1,10 +1,12 @@
 package ru.lionzxy.fastlogblock.io.base;
 
-import gnu.trove.list.array.TByteArrayList;
 import net.minecraftforge.fml.common.FMLLog;
+import ru.lionzxy.fastlogblock.utils.Constants;
 import ru.lionzxy.fastlogblock.utils.FileUtils;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -20,34 +22,40 @@ public abstract class IterrateByteFile {
         this.file = file;
     }
 
-    public void iterateByFile(final Consumer<TByteArrayList> callback) throws IOException {
+    public boolean iterateByFile(final Consumer<ByteBuffer> callback) throws IOException {
         FileUtils.createFileIfNotExist(file);
 
-        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file))) {
+        try (FileInputStream fis = new FileInputStream(file);
+             FileChannel fic = fis.getChannel();
+        ) {
             readWriteLock.writeLock().lock();
             try {
-                iterateByByte(bufferedInputStream, callback);
+                return iterateByByte(fic, callback);
             } finally {
                 readWriteLock.writeLock().unlock();
             }
         }
     }
 
-    private void iterateByByte(final InputStream is, final Consumer<TByteArrayList> callback) throws IOException {
-        final byte[] buffer = new byte[FileUtils.BYTEBUFFERSIZE];
-        int len;
+    private boolean iterateByByte(final FileChannel is, final Consumer<ByteBuffer> callback) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(Constants.SIZE_LOGLINE);
 
-        final TByteArrayList arrayList = new TByteArrayList();
-        while ((len = is.read(buffer)) != -1) {
-            for (int i = 0; i < len; i++) {
-                arrayList.add(buffer[i]);
-
-                if (checkLineEnd(arrayList, buffer[i])) {
-                    callback.accept(arrayList);
-                    arrayList.clear(arrayList.size());
-                }
+        int corrupted = 0;
+        while (is.read(buffer) == Constants.SIZE_LOGLINE) {
+            buffer.flip();
+            if (!checkLineEnd(buffer.get(Constants.SIZE_LOGLINE - 1))) {
+                ++corrupted;
+            } else {
+                callback.accept(buffer);
             }
+            buffer.clear();
         }
+
+        if (corrupted > 0) {
+            FMLLog.log.warn("Corrupted lines: " + corrupted);
+            return false;
+        }
+        return true;
     }
 
     public void sync() throws IOException {
@@ -74,7 +82,7 @@ public abstract class IterrateByteFile {
         FMLLog.log.debug("Sync finished!");
     }
 
-    protected abstract boolean checkLineEnd(TByteArrayList arrayList, byte endByte);
+    protected abstract boolean checkLineEnd(byte endByte);
 
     protected abstract void writeToFile(OutputStream outputStream) throws IOException;
 

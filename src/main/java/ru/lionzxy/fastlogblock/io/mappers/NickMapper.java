@@ -3,7 +3,6 @@ package ru.lionzxy.fastlogblock.io.mappers;
 import com.google.common.annotations.VisibleForTesting;
 import gnu.trove.TIntObjectHashMap;
 import gnu.trove.TObjectIntHashMap;
-import gnu.trove.list.array.TByteArrayList;
 import ru.lionzxy.fastlogblock.io.base.IterrateByteFile;
 import ru.lionzxy.fastlogblock.models.ASCIString;
 import ru.lionzxy.fastlogblock.utils.Constants;
@@ -31,10 +30,9 @@ public class NickMapper extends IterrateByteFile {
         this.iterateByFile(this::putFromByte);
     }
 
-    private void putFromByte(final TByteArrayList byteArrayList) {
-        final ByteBuffer byteBuffer = ByteBuffer.wrap(byteArrayList.toArray());
+    private void putFromByte(final ByteBuffer byteBuffer) {
         final int userid = byteBuffer.getInt();
-        int nameSize = byteArrayList.size() - Integer.BYTES - 1;
+        int nameSize = byteBuffer.remaining() - Integer.BYTES - 1;
 
         if (nameSize <= 0) {
             return;
@@ -128,7 +126,7 @@ public class NickMapper extends IterrateByteFile {
     }
 
     @Override
-    protected boolean checkLineEnd(final TByteArrayList arrayList, final byte endByte) {
+    protected boolean checkLineEnd(final byte endByte) {
         return endByte == Constants.DEVIDER_SYMBOL;
     }
 }

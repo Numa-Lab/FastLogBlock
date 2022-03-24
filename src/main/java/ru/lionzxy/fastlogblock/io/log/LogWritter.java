@@ -6,26 +6,39 @@ import ru.lionzxy.fastlogblock.models.BlockChangeEventModel;
 import ru.lionzxy.fastlogblock.utils.Constants;
 import ru.lionzxy.fastlogblock.utils.FileUtils;
 
-import java.io.BufferedOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
-public class LogWritter {
+public class LogWritter implements Closeable {
     private final BlockMapper blockMapper;
     private final NickMapper nickMapper;
     private final File file;
-    private BufferedOutputStream os;
+    private FileOutputStream os;
+    private FileChannel fc;
 
     public LogWritter(final File file, final BlockMapper blockMapper, final NickMapper nickMapper) throws IOException {
         this.file = file;
         this.blockMapper = blockMapper;
         this.nickMapper = nickMapper;
 
+        init();
+    }
+
+    private void init() throws IOException {
         FileUtils.createFileIfNotExist(file);
 
-        os = new BufferedOutputStream(new FileOutputStream(file, true));
+        os = new FileOutputStream(file, true);
+        fc = os.getChannel();
+        long size = fc.size();
+        long pad = size % Constants.SIZE_LOGLINE;
+        if (pad != 0) {
+            fc.truncate(size - pad);
+            fc.position(size - pad);
+        }
     }
 
     /**
@@ -45,11 +58,11 @@ public class LogWritter {
         byteBuffer.put(Constants.DEVIDER_SYMBOL);
 
         try {
-            os.write(byteBuffer.array());
+            fc.write(byteBuffer);
         } catch (final IOException e) {
             try {
                 sync();
-                os.write(byteBuffer.array());
+                fc.write(byteBuffer);
             } catch (final IOException ioe) {
                 ioe.printStackTrace();
             }
@@ -57,13 +70,17 @@ public class LogWritter {
     }
 
     public void sync() throws IOException {
-        FileUtils.createFileIfNotExist(file);
-
         try {
-            os.flush();
+            fc.force(false);
         } catch (final IOException e) {
-            os = new BufferedOutputStream(new FileOutputStream(file, true));
-            os.flush();
+            FileUtils.closeQuietly(fc);
+            init();
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        fc.close();
+        os.close();
     }
 }

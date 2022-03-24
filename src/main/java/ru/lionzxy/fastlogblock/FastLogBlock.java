@@ -13,7 +13,6 @@ import ru.lionzxy.fastlogblock.ui.InfoItem;
 import java.io.IOException;
 
 @Mod(modid = FastLogBlock.MODID, version = FastLogBlock.VERSION,
-        serverSideOnly = true,
         acceptableRemoteVersions = "*",
         updateJSON = "https://raw.githubusercontent.com/LionZXY/FastLogBlock/master/update.json")
 public class FastLogBlock {

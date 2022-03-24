@@ -2,10 +2,10 @@ package ru.lionzxy.fastlogblock.io.mappers;
 
 import com.google.common.annotations.VisibleForTesting;
 import gnu.trove.TObjectLongHashMap;
-import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.map.TLongObjectMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
 import gnu.trove.set.TLongSet;
+import gnu.trove.set.hash.TLongHashSet;
 import ru.lionzxy.fastlogblock.io.base.IterrateByteFile;
 import ru.lionzxy.fastlogblock.models.ASCIString;
 
@@ -54,10 +54,9 @@ public class BlockMapper extends IterrateByteFile {
         outputStream.flush();
     }
 
-    private void putFromByte(final TByteArrayList byteArrayList) {
-        final ByteBuffer byteBuffer = ByteBuffer.wrap(byteArrayList.toArray());
+    private void putFromByte(final ByteBuffer byteBuffer) {
         final long blockid = byteBuffer.getLong();
-        int nameSize = byteArrayList.size() - Long.BYTES - 1;
+        int nameSize = byteBuffer.remaining() - Long.BYTES - 1;
 
         if (nameSize <= 0) {
             return;
@@ -137,7 +136,7 @@ public class BlockMapper extends IterrateByteFile {
     }
 
     @Override
-    protected boolean checkLineEnd(final TByteArrayList arrayList, final byte endByte) {
+    protected boolean checkLineEnd(final byte endByte) {
         return endByte == DEVIDER_SYMBOL;
     }
 }

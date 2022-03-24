@@ -1,6 +1,5 @@
 package ru.lionzxy.fastlogblock.io.log;
 
-import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.TLongObjectMap;
 import gnu.trove.set.TIntSet;
@@ -51,8 +50,8 @@ public class LogReader extends IterrateByteFile {
         final TIntSet needNickName = new TIntHashSet();
         iterateByFile((byteList) -> {
             try {
-                final PrepareReadBlockChangeEvent prepareReadBlockChangeEvent = prepareOrNullByPos(byteList.toArray(),
-                        needPosX, needPosY, needPosZ);
+                final PrepareReadBlockChangeEvent prepareReadBlockChangeEvent =
+                        prepareOrNullByPos(byteList, needPosX, needPosY, needPosZ);
                 if (prepareReadBlockChangeEvent == null) {
                     return;
                 }
@@ -73,8 +72,7 @@ public class LogReader extends IterrateByteFile {
         return prepareEvents.stream().map(pE -> pE.toBlockChangeEventModel(idToNick, idToBlock)).collect(Collectors.toList());
     }
 
-    private PrepareReadBlockChangeEvent prepareOrNullByPos(final byte[] bytes, final int needPosX, final int needPosY, final int needPosZ) {
-        final ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+    private PrepareReadBlockChangeEvent prepareOrNullByPos(final ByteBuffer byteBuffer, final int needPosX, final int needPosY, final int needPosZ) {
         final int posX = byteBuffer.getInt();
         if (posX != needPosX) {
             return null;
@@ -106,7 +104,7 @@ public class LogReader extends IterrateByteFile {
     }
 
     @Override
-    protected boolean checkLineEnd(final TByteArrayList arrayList, final byte endByte) {
+    protected boolean checkLineEnd(final byte endByte) {
         return endByte == Constants.DEVIDER_SYMBOL;
     }
 }

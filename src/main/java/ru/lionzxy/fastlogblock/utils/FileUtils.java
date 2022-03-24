@@ -1,5 +1,6 @@
 package ru.lionzxy.fastlogblock.utils;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 
@@ -14,6 +15,16 @@ public class FileUtils {
             if (!file.createNewFile()) {
                 throw new IOException("Can't create file " + file.getAbsolutePath());
             }
+        }
+    }
+
+    public static void closeQuietly(final Closeable closeable) {
+        try {
+            if (closeable != null) {
+                closeable.close();
+            }
+        } catch (final IOException ioe) {
+            // ignore
         }
     }
 }
