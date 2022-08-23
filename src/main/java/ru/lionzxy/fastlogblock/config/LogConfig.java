@@ -21,8 +21,9 @@ public class LogConfig {
     @Config.Comment("Path to block mapper file from logFolderPath")
     public static String blockToLongFilePath = "blocktoid.bytelog";
     public static HashConfig HASH_CONFIG = new HashConfig();
-    @Config.Comment("File splitter type. SINGLE for single-file strategy, BLOCKHASH for file=HASH(BlockPos) strategy")
-    public static FileSplitterEnum fileSplitterType = FileSplitterEnum.BLOCKHASH;
+    public static ChunkConfig CHUNK_CONFIG = new ChunkConfig();
+    @Config.Comment("File splitter type. SINGLE for single-file strategy, BLOCKHASH for file=HASH(BlockPos) strategy, CHUNK for file=CHUNK(BlockPos) strategy")
+    public static FileSplitterEnum fileSplitterType = FileSplitterEnum.CHUNK;
     @Config.Comment("Utils information for migration")
     public static int logSchemeVersion = 1;
     @Config.Comment("Utils information for migration")
@@ -38,6 +39,11 @@ public class LogConfig {
 
         @Config.Comment("Pattern for log filename. %d - file number. Default: part%d.bytelog")
         public final String fileNamePattern = "part%d.bytelog";
+    }
+
+    public static class ChunkConfig {
+        @Config.Comment("Pattern for log filename. %d - file number. Default: chunk-%d-%d.bytelog")
+        public final String fileNamePattern = "chunk.%d.%d.bytelog";
     }
 
     @Mod.EventBusSubscriber(modid = FastLogBlock.MODID)

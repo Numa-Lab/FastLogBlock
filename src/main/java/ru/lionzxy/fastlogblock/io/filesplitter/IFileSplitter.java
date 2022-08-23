@@ -12,7 +12,5 @@ public abstract class IFileSplitter {
         this.modFolder = modFolder;
     }
 
-    public abstract File[] getAllLogFile();
-
     public abstract File getFileByPosAndWorld(BlockPos blockPos, World world);
 }

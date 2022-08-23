@@ -56,6 +56,7 @@ public class LogWritter implements Closeable {
         byteBuffer.putLong(blockMapper.getOrPutBlock(blockChangeEventModel.getNameblock()));
         byteBuffer.putLong(blockChangeEventModel.getTimestamp().getTime());
         byteBuffer.put(Constants.DEVIDER_SYMBOL);
+        byteBuffer.flip();
 
         try {
             fc.write(byteBuffer);

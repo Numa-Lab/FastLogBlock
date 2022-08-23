@@ -6,6 +6,7 @@ import ru.lionzxy.fastlogblock.io.ReadRunnable;
 import ru.lionzxy.fastlogblock.io.WriteRunnable;
 import ru.lionzxy.fastlogblock.io.filesplitter.IFileSplitter;
 import ru.lionzxy.fastlogblock.io.filesplitter.impl.BlockHashFileSplitter;
+import ru.lionzxy.fastlogblock.io.filesplitter.impl.ChunkFileSplitter;
 import ru.lionzxy.fastlogblock.io.filesplitter.impl.SingleFileSplitter;
 import ru.lionzxy.fastlogblock.io.mappers.BlockMapper;
 import ru.lionzxy.fastlogblock.io.mappers.NickMapper;
@@ -37,9 +38,12 @@ public class SplitterRunnable implements Runnable {
             case SINGLE:
                 fileSplitter = new SingleFileSplitter(rootFile);
                 break;
-            default:
             case BLOCKHASH:
                 fileSplitter = new BlockHashFileSplitter(rootFile);
+                break;
+            default:
+            case CHUNK:
+                fileSplitter = new ChunkFileSplitter(rootFile);
                 break;
         }
         this.nickMapper = new NickMapper(new File(rootFile, LogConfig.nickToIntFilePath));

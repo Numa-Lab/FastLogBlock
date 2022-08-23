@@ -16,11 +16,6 @@ public class SingleFileSplitter extends IFileSplitter {
     }
 
     @Override
-    public File[] getAllLogFile() {
-        return new File[]{logFile};
-    }
-
-    @Override
     public File getFileByPosAndWorld(final BlockPos blockPos, World world) {
         if (world == null) {
             return new File(modFolder, "block.bytelog");

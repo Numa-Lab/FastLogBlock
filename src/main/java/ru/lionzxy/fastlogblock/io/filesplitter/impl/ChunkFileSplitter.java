@@ -8,25 +8,15 @@ import ru.lionzxy.fastlogblock.io.filesplitter.IFileSplitter;
 
 import java.io.File;
 
-public class BlockHashFileSplitter extends IFileSplitter {
-    private static final int MAGIC_HASH_NUMBER = 31;
-
-    public BlockHashFileSplitter(final File modFolder) {
+public class ChunkFileSplitter extends IFileSplitter {
+    public ChunkFileSplitter(final File modFolder) {
         super(modFolder);
-    }
-
-    private static int hashByBlock(final BlockPos blockPos) {
-        final int signedHash = ((blockPos.getX() * MAGIC_HASH_NUMBER +
-                blockPos.getY()) * MAGIC_HASH_NUMBER +
-                blockPos.getZ()) * MAGIC_HASH_NUMBER;
-        final int hash = Math.abs(signedHash) % LogConfig.HASH_CONFIG.fileCount;
-        return hash < 0 ? 0 : hash;
     }
 
     @Override
     public File getFileByPosAndWorld(final BlockPos blockPos, World world) {
         if (world == null) {
-            return new File(modFolder, String.format(LogConfig.HASH_CONFIG.fileNamePattern, hashByBlock(blockPos)));
+            return new File(modFolder, String.format(LogConfig.CHUNK_CONFIG.fileNamePattern, blockPos.getX() >> 4, blockPos.getZ() >> 4));
         }
 
         File saveFile = DimensionManager.getCurrentSaveRootDirectory();
@@ -39,7 +29,7 @@ public class BlockHashFileSplitter extends IFileSplitter {
             worldSave = "DIM0";
         }
         final File dimFolder = new File(saveFolder, new File(worldSave).getName());
-        return new File(dimFolder, String.format(LogConfig.HASH_CONFIG.fileNamePattern, hashByBlock(blockPos)));
+        return new File(dimFolder, String.format(LogConfig.CHUNK_CONFIG.fileNamePattern, blockPos.getX() >> 4, blockPos.getZ() >> 4));
     }
 
 
